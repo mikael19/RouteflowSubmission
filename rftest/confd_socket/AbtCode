@@ -1,0 +1,18 @@
+
+This program is basically made of three functions: read_conf(), display_conf and main() of Course!
+read_conf() does the following:
+- initialises a socket for reading configuration data from the cdb database
+- starts a session with the CDB database
+- Sets the namespace of the session. This namespace is gotten from the yang file’s namespace. This namespace was subject of many errors as written in the above sections, perharps because The openconfig group has not yet done the proper adjustments for the namespace. For now, I will be using the ‘example.com/ns’ namespace for subsequent yang files.
+- It then checks if there is configuration information for the container(of purpose) and list in the Yang file. In my case, the path is ‘/router/bgp’.
+- If there is no configuration data, the session can be ended and the socket closed.
+- We now go through the list in /router/bgp to get the router id and autonomous system number, so that it can be displayed as required.
+
+display_conf()
+- It is basically used to print the gotten information in a file and in the command line.
+
+main()
+- the ip address  where confd listens is set
+- a subscription socket is created
+- we are subscribing to bgpd__ns, as specified in the header file compiled with the command: ./confdc --emit-h bgp.h bgp.fxs
+- we now listen for events like, new configuration, so that the appropriate changes can mbe made on the read configuration.

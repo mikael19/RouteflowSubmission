@@ -1,0 +1,42 @@
+module bgp {
+  namespace "http://example.com/ns/bgp";
+  prefix bgpd;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+container router {
+	list bgp {
+	key as;	
+	leaf as{
+	  type inet:as-number;
+}
+	leaf router-id{
+	type inet:ip-address;
+}
+}
+}
+container neighbor {
+	list conf{
+	key as;
+	leaf ip-address{
+	type inet:ip-address;
+}
+
+	leaf as{
+	type inet:as-number;
+}
+}
+}
+container network {
+	list mask{
+	key submask;
+	leaf ip-address{
+	type inet:ip-address;
+}
+	leaf submask{
+	type inet:ip-address;
+}
+}
+}
+}

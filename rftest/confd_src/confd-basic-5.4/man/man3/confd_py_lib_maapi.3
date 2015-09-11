@@ -1,0 +1,320 @@
+'\" t
+.\"     Title: confd_py_lib_maapi
+.\"    Author:  <support@tail-f.com>
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 03/18/2015
+.\"    Manual: ConfD Manual
+.\"    Source: Tail-f Systems
+.\"  Language: English
+.\"
+.TH "CONFD_PY_LIB_MAAPI" "3" "03/18/2015" "Tail-f Systems" "ConfD Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+confd_py_lib_maapi \- Python MAAPI (Management Agent API)\&. A module for connecting to ConfD with a read/write interface inside transactions\&.
+.SH "MODULE"
+.PP
+ConfD
+module, (confd\&._maapi)
+.SH "FUNCTIONS"
+.PP
+The Python MAAPI API is divided into two parts, low\-level and high\-level\&.
+.PP
+The low\-level Python MAAPI API is a direct mapping of the C MAAPI API, for details see
+\m[blue]\fBconfd_lib_maapi(3)\fR\m[]\&.
+.PP
+The low\-level API is accessed via the
+confd\&._maapi package\&.
+.PP
+.PP
+The high\-level Python MAAPI API leverage the low\-level API by using various Python constructs, e\&.g\&. with\-contexts for resource management\&.
+.PP
+The high\-level API is accessed via the
+confd\&.maapi package\&.
+.SH "FUNCTION ARGUMENTS"
+.PP
+All low\-level Python MAAPI functions have both positional and named arguments and the C \-> Python argument translation rules are straight forward\&.
+.PP
+For input arguments the same name and position is kept\&.
+.nr wf \w'int\ maapi_close('
+.nr wm 0
+.nr wp \w'int\ sock);'
+.if \n(wp>\n(wm 'nr wm \n(wp
+.ie \n(IN+\n(wf+\n(wm-\n(LL \{\
+.HP \n(LLu-\n(INu-\n(wmu
+.BI "int maapi_close("
+.br
+.BI "int\ " "sock" ");" \}
+.el \{\
+.HP \n(wfu
+.BI "int maapi_close(int\ " "sock" ");" \}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+confd\&._maapi\&.close(s)
+confd\&._maapi\&.close(sock = s)
+       
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+A function argument used to return values in C, is removed from the argument list and is the return value in Python\&.
+.nr wf \w'int\ maapi_get_elem('
+.nr wm 0
+.nr wp \w'int\ sock,'
+.if \n(wp>\n(wm 'nr wm \n(wp
+.nr wp \w'int\ thandle,'
+.if \n(wp>\n(wm 'nr wm \n(wp
+.nr wp \w'confd_value_t\ *v,'
+.if \n(wp>\n(wm 'nr wm \n(wp
+.nr wp \w'const\ char\ *fmt,'
+.if \n(wp>\n(wm 'nr wm \n(wp
+.nr wp \w'\&.\&.\&.);'
+.if \n(wp>\n(wm 'nr wm \n(wp
+.ie \n(IN+\n(wf+\n(wm-\n(LL \{\
+.HP \n(LLu-\n(INu-\n(wmu
+.BI "int maapi_get_elem("
+.br
+.BI "int\ " "sock" ", int\ " "thandle" ", confd_value_t\ *" "v" ", const\ char\ *" "fmt" ", \&.\&.\&.);" \}
+.el \{\
+.HP \n(wfu
+.BI "int maapi_get_elem(int\ " "sock" ", int\ " "thandle" ", confd_value_t\ *" "v" ", const\ char\ *" "fmt" ", \&.\&.\&.);" \}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+v = confd\&._maapi\&.get_elem(s, th, \*(Aq/test:test/i1\*(Aq)
+v = confd\&._maapi\&.get_elem(sock = s, thandle = th, fmt = \*(Aq/test:test/i1\*(Aq)
+     
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+More information can be found among the test\-cases, see files in
+$CONFD_DIR/src/confd/py_src/tests
+\&.
+.SH "VALUE TYPE"
+.PP
+The
+confd\&.types\&.Value class is the Python representation of the confd_value_t C type\&.
+.PP
+The constructor default behaviour is that a string corresponds to a C_BUF and a numerical value corresponds to C_INT32\&.
+.PP
+It\*(Aqs also possible to specify the value type\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+V = confd\&.types\&.Value
+
+V(\*(Aqfoo\*(Aq)                 # C_BUF
+V(42)                    # C_INT32
+V(42, V\&.C_UINT8)         # C_UINT8
+V(\*(Aq127\&.0\&.0\&.1\*(Aq, V\&.C_IPV4) # C_IPV4
+V(b\*(Aqa\ex00c\*(Aq, V\&.C_BINARY) # C_BINARY
+
+       
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Converting to and from model dependant string values e\&.g\&. enumeration types is possible via the val2str and str2val methods\&.
+.PP
+Assuming the following yang model\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+module types_test_value {
+
+  namespace "http://tail\-f\&.com/confd/types/python/test";
+  prefix ttv;
+
+  container tests {
+    container enum {
+      leaf e1 {
+        type enumeration {
+          enum one;
+          enum two;
+          enum three;
+        }
+      }
+    }
+  }
+}
+      
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+It\*(Aqs possible to convert from and to string values for the leaf /ttv:tests/enum/e1 in the following way\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+confd\&._maapi\&.load_schemas(sock = \&.\&.\&.)
+
+# Convert enum string value to a C_ENUM_HASH
+
+v = V\&.str2val(\*(Aqone\*(Aq,
+              \*(Aqhttp://tail\-f\&.com/confd/types/python/test\*(Aq,
+              \*(Aq/ttv:tests/enum/e1\*(Aq)
+
+# Convert C_ENUM_HASH to string value
+
+s = v\&.val2str(\*(Aqhttp://tail\-f\&.com/confd/types/python/test\*(Aq,
+              \*(Aq/ttv:tests/enum/e1\*(Aq)
+
+       
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+NOTE: The
+confd\&._maapi\&.load_schemas(\&.\&.\&.) method must have been called before the str2val/val2str function works\&.
+.PP
+NOTE: The str2val is a class\-method and val2str is an instance\-method\&.
+.SH "CONSTANTS"
+.PP
+Constants from confd_lib\&.h, e\&.g\&. CONFD_READ, CONFD_READ_WRITE and CONFD_PROTO_TCP, are in the
+confd\&._constants module, with the CONFD_ prefix removed\&.
+.PP
+E\&.g\&.
+confd\&._constants\&.READ_WRITE\&.
+.PP
+Constants from confd_maapi\&.h, e\&.g\&. MAAPI_CONFIG_XML and MAAPI_FLAG_HINT_BULK, are in the
+confd\&._maapi\&.const module with the MAAPI_ prefix removed\&.
+.PP
+E\&.g\&.
+confd\&._maapi\&.const\&.CONFIG_XML\&.
+.SH "EXCEPTIONS"
+.PP
+All functions may raise a
+confd\&._error\&.Error or a
+confd\&._error\&.EOF exception\&.
+.PP
+In the case of
+confd\&._error\&.EOF being raised, it means that the socket to
+ConfD
+has been closed\&.
+.SH "EXAMPLES"
+.PP
+Make sure that the
+\fBPYTHONPATH\fR
+variable contains
+${CONFD_DIR}/src/confd/py_src
+.PP
+\- Low\-level get and set leaf value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+import socket
+import confd
+
+s = socket\&.socket()
+confd\&._maapi\&.connect(s, \*(Aq127\&.0\&.0\&.1\*(Aq, confd\&._constants\&.CONFD_PORT)
+
+try :
+    confd\&._maapi\&.start_user_session(s, \*(Aqadmin\*(Aq,
+                            \*(Aqtest\*(Aq, [], \*(Aq127\&.0\&.0\&.1\*(Aq,
+                            confd\&._constants\&.PROTO_TCP)
+
+    th = confd\&._maapi\&.start_trans(s, confd\&._constants\&.RUNNING,
+                            confd\&._constants\&.READ)
+
+    s1 = confd\&._maapi\&.get_elem(s, th, \*(Aq/test:test/s1\*(Aq)
+
+    confd\&._maapi\&.set_elem(s, th, confd\&.types\&.Value(\*(Aqnew value\*(Aq),
+                          \*(Aq/test:test/s1\*(Aq),
+
+    confd\&._maapi\&.finish_trans(s, th)
+    confd\&._maapi\&.end_user_session(s)
+finally :
+    confd\&._maapi\&.close(s)
+
+       
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+\- High\-level get and set leaf value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+import confd
+
+
+with confd\&.maapi\&.wctx\&.connect(ip = \*(Aq127\&.0\&.0\&.1\*(Aq, port = confd\&._constants\&.CONFD_PORT) as c :
+    with confd\&.maapi\&.wctx\&.session(c, \*(Aqadmin\*(Aq) as s :
+        with confd\&.maapi\&.wctx\&.trans(s, readWrite = confd\&._constants\&.READ_WRITE) as t :
+
+            s1 = t\&.get_elem(\*(Aq/test:test/s1\*(Aq)
+            t\&.set_elem(confd\&.types\&.Value(\*(Aqnew value\*(Aq), \*(Aq/test:test/s1\*(Aq),
+      
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+\- High\-level read keys from list, default arguments for connect port and read transaction
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+import confd
+
+with confd\&.maapi\&.wctx\&.connect(ip = \*(Aq::1\*(Aq) as c :
+    with confd\&.maapi\&.wctx\&.session(c, \*(Aqadmin\*(Aq) as s :
+        with confd\&.maapi\&.wctx\&.trans(s) as t :
+
+            with t\&.cursor(\*(Aq/test:test/the\-list\*(Aq) as cur :
+                for key in cur :
+                    print(key\&.path())
+      
+.fi
+.if n \{\
+.RE
+.\}
+.SH "AUTHOR"
+.PP
+ <\&support@tail\-f\&.com\&>
+.RS 4
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2014, 2015 Tail-f Systems AB
+.br

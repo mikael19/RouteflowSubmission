@@ -1,0 +1,8 @@
+password routeflow
+enable password routeflow
+!
+router bgp 1
+ bgp router-id 192.168.1.1
+ neighbor  192.168.2.2 remote-as 2
+ network 173.16.5.0 mask 255.255.0.0
+ network 194.32.4.0 mask 255.255.255.0

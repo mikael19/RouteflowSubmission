@@ -1,0 +1,156 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>confd_py_lib_maapi</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="index.html" title="ConfD User Guide"><link rel="up" href="rn02.html" title="ConfD man-pages, Volume 3"><link rel="prev" href="rn02re16.html" title="confd_py_lib"><link rel="next" href="rn02re18.html" title="confd_types"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center"><span class="phrase">confd</span>_py_lib_maapi</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="rn02re16.html">Prev</a>&nbsp;</td><th width="60%" align="center">ConfD man-pages, Volume 3</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="rn02re18.html">Next</a></td></tr></table><hr></div><div class="refentry"><a name="man.3.py_lib_maapi"></a><div class="titlepage"></div><div class="refnamediv"><a name="man.3.py_lib_maapi.name"></a><h2>Name</h2><p><span class="phrase">confd</span>_py_lib_maapi &#8212; Python MAAPI (Management Agent API). A module for connecting
+      to ConfD with a read/write interface inside transactions.</p></div><div class="refsect1"><a name="man.3.py_lib_maapi.library"></a><h2>MODULE</h2><p>ConfD module, (<span class="package">confd._maapi</span>)</p></div><div class="refsect1"><a name="man.3.py_lib_maapi.functions"></a><h2>FUNCTIONS</h2><p>
+      The Python MAAPI API is divided into two parts, low-level and high-level.
+    </p><p>
+      The low-level Python MAAPI API is a direct mapping of the C MAAPI API,
+      for details see <a class="link" href="rn02re15.html" title="confd_lib_maapi">confd_lib_maapi(3)</a>.
+    </p><p>
+      The low-level API is accessed via the confd._maapi package.
+    </p><p> </p><p>
+      The high-level Python MAAPI API leverage the low-level API by using
+      various Python constructs, e.g. with-contexts for resource management.
+    </p><p>
+      The high-level API is accessed via the confd.maapi package.
+    </p></div><div class="refsect1"><a name="man.3.py_lib_maapi.parameter_translation"></a><h2>FUNCTION ARGUMENTS</h2><p>
+      All low-level Python MAAPI functions have both positional and named arguments and
+      the C -&gt; Python argument translation rules are straight forward.
+    </p><p>
+      For input arguments the same name and position is kept.
+    </p><div class="funcsynopsis"><table border="0" class="funcprototype-table" summary="Function synopsis" style="cellspacing: 0; cellpadding: 0;"><tr><td><code class="funcdef">int <b class="fsfunc">maapi_close</b>(</code></td><td>int <var class="pdparam">sock</var><code>)</code>;</td></tr></table><div class="funcprototype-spacer">&nbsp;</div></div><div class="informalexample"><pre class="programlisting">
+confd._maapi.close(s)
+confd._maapi.close(sock = s)
+       </pre></div><p>
+      A function argument used to return values in C, is removed from the
+      argument list and is the return value in Python.
+    </p><div class="funcsynopsis"><table border="0" class="funcprototype-table" summary="Function synopsis" style="cellspacing: 0; cellpadding: 0;"><tr><td><code class="funcdef">int <b class="fsfunc">maapi_get_elem</b>(</code></td><td>int <var class="pdparam">sock</var>, </td></tr><tr><td>&nbsp;</td><td>int <var class="pdparam">thandle</var>, </td></tr><tr><td>&nbsp;</td><td>confd_value_t *<var class="pdparam">v</var>, </td></tr><tr><td>&nbsp;</td><td>const char *<var class="pdparam">fmt</var>, </td></tr><tr><td>&nbsp;</td><td>...<code>)</code>;</td></tr></table><div class="funcprototype-spacer">&nbsp;</div></div><div class="informalexample"><pre class="programlisting">
+v = confd._maapi.get_elem(s, th, '/test:test/i1')
+v = confd._maapi.get_elem(sock = s, thandle = th, fmt = '/test:test/i1')
+     </pre></div><p>
+    More information can be found among the test-cases, see files in
+    <code class="filename">$CONFD_DIR/src/confd/py_src/tests</code>
+    .
+  </p></div><div class="refsect1"><a name="man.3.py_lib_maapi.value_type"></a><h2>VALUE TYPE</h2><p>
+      The confd.types.Value class is the Python representation
+      of the confd_value_t C type.
+    </p><p>
+      The constructor default behaviour is that a string corresponds
+      to a C_BUF and a numerical value corresponds to C_INT32.
+    </p><p>
+      It's also possible to specify the value type.
+    </p><div class="informalexample"><pre class="programlisting">
+V = confd.types.Value
+
+V('foo')                 # C_BUF
+V(42)                    # C_INT32
+V(42, V.C_UINT8)         # C_UINT8
+V('127.0.0.1', V.C_IPV4) # C_IPV4
+V(b'a\x00c', V.C_BINARY) # C_BINARY
+
+       </pre></div><p>
+      Converting to and from model dependant string values e.g. enumeration
+      types is possible via the val2str and str2val methods.
+    </p><p>
+      Assuming the following yang model.
+    </p><div class="informalexample"><pre class="programlisting">
+module types_test_value {
+
+  namespace "http://tail-f.com/confd/types/python/test";
+  prefix ttv;
+
+  container tests {
+    container enum {
+      leaf e1 {
+        type enumeration {
+          enum one;
+          enum two;
+          enum three;
+        }
+      }
+    }
+  }
+}
+      </pre></div><p>
+      It's possible to convert from and to string values for the
+      leaf /ttv:tests/enum/e1 in the following way.
+    </p><div class="informalexample"><pre class="programlisting">
+confd._maapi.load_schemas(sock = ...)
+
+# Convert enum string value to a C_ENUM_HASH
+
+v = V.str2val('one',
+              'http://tail-f.com/confd/types/python/test',
+              '/ttv:tests/enum/e1')
+
+# Convert C_ENUM_HASH to string value
+
+s = v.val2str('http://tail-f.com/confd/types/python/test',
+              '/ttv:tests/enum/e1')
+
+       </pre></div><p>
+      NOTE: The confd._maapi.load_schemas(...) method must
+      have been called before the str2val/val2str function works.
+    </p><p>
+      NOTE: The str2val is a class-method and val2str is an instance-method.
+    </p></div><div class="refsect1"><a name="man.3.py_lib_maapi.constants"></a><h2>CONSTANTS</h2><p>
+      Constants from confd_lib.h, e.g. CONFD_READ, CONFD_READ_WRITE and
+      CONFD_PROTO_TCP, are in the confd._constants module, with
+      the CONFD_ prefix removed.
+    </p><p>E.g. confd._constants.READ_WRITE.
+    </p><p>Constants from confd_maapi.h, e.g. MAAPI_CONFIG_XML and
+      MAAPI_FLAG_HINT_BULK, are in the confd._maapi.const module
+      with the MAAPI_ prefix removed.
+    </p><p>E.g. confd._maapi.const.CONFIG_XML.
+    </p></div><div class="refsect1"><a name="man.3.py_lib_maapi.exceptions"></a><h2>EXCEPTIONS</h2><p>All functions may raise a confd._error.Error or a
+      confd._error.EOF exception.
+    </p><p>In the case of confd._error.EOF being raised,
+    it means that the socket to ConfD has been closed.</p></div><div class="refsect1"><a name="man.3.py_lib_maapi.examples"></a><h2>EXAMPLES</h2><p>Make sure that the
+    <code class="envar">PYTHONPATH</code> variable contains <code class="filename">${CONFD_DIR}/src/confd/py_src</code>
+    
+    </p><p>- Low-level get and set leaf value </p><div class="informalexample"><pre class="programlisting">
+import socket
+import confd
+
+s = socket.socket()
+confd._maapi.connect(s, '127.0.0.1', confd._constants.<span class="phrase">CONFD</span>_PORT)
+
+try :
+    confd._maapi.start_user_session(s, 'admin',
+                            'test', [], '127.0.0.1',
+                            confd._constants.PROTO_TCP)
+
+    th = confd._maapi.start_trans(s, confd._constants.RUNNING,
+                            confd._constants.READ)
+
+    s1 = confd._maapi.get_elem(s, th, '/test:test/s1')
+
+    confd._maapi.set_elem(s, th, confd.types.Value('new value'),
+                          '/test:test/s1'),
+
+    confd._maapi.finish_trans(s, th)
+    confd._maapi.end_user_session(s)
+finally :
+    confd._maapi.close(s)
+
+       </pre></div><p>- High-level get and set leaf value </p><div class="informalexample"><pre class="programlisting">
+import confd
+
+
+with confd.maapi.wctx.connect(ip = '127.0.0.1', port = confd._constants.<span class="phrase">CONFD</span>_PORT) as c :
+    with confd.maapi.wctx.session(c, 'admin') as s :
+        with confd.maapi.wctx.trans(s, readWrite = confd._constants.READ_WRITE) as t :
+
+            s1 = t.get_elem('/test:test/s1')
+            t.set_elem(confd.types.Value('new value'), '/test:test/s1'),
+      </pre></div><p>- High-level read keys from list, default arguments for connect port and read transaction</p><div class="informalexample"><pre class="programlisting">
+import confd
+
+with confd.maapi.wctx.connect(ip = '::1') as c :
+    with confd.maapi.wctx.session(c, 'admin') as s :
+        with confd.maapi.wctx.trans(s) as t :
+
+            with t.cursor('/test:test/the-list') as cur :
+                for key in cur :
+                    print(key.path())
+      </pre></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="rn02re16.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="rn02.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="rn02re18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="phrase">confd</span>_py_lib&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;confd_types</td></tr></table></div></body></html>
