@@ -25,7 +25,7 @@ chroot $LXCDIR/base/rootfs apt-get update
 # !!!
 chroot $LXCDIR/base/rootfs apt-get -y --force-yes install quagga \
     libboost-thread-dev gnome-terminal libboost-system-dev libboost-filesystem-dev libxml2-utils gedit expect\
-    libboost-program-options-dev rsyslog vlan tcpdump telnet
+    libboost-program-options-dev rsyslog vlan tcpdump telnet terminator
 # !!!
 
 if [ -e /usr/local/lib/libzmq.so ]; then
